@@ -4,7 +4,8 @@ var express = require('express'),
     swig = require('swig'),
     bodyParser = require('body-parser'),
     mime = require('mime'),
-    fs = require('fs');
+    fs = require('fs'),
+    models = require('./models');
 
 // "constants" (not really) and our own modules
 var PORT = 1337,
@@ -52,7 +53,7 @@ app.use(express.static(__dirname + '/public'));
 // if we got this far, we couldn't match the route, so send to error middleware
 app.use(function(req, res, next){
   var err = new Error('could not find route');
-  err.status = 404 )
+  err.status = 404;
   next(err); // passing a truthy value to `next` goes to error middleware
 });
 
@@ -66,4 +67,4 @@ app.listen(PORT, function(){
   console.log('Listening to port', PORT);
 });
 //
-// 
+//

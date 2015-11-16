@@ -1,3 +1,4 @@
+var Promise = require('bluebird');
 // pull in the Sequelize library
 var Sequelize = require('sequelize');
 // create an instance of a database connection
@@ -16,6 +17,7 @@ twitterjsDB
     console.log('Connection has been established successfully.');
   });
 
+  // set up interface for DBs
   var Tweet = require('./tweet')(twitterjsDB),
     User = require('./user')(twitterjsDB);
 
@@ -23,7 +25,47 @@ twitterjsDB
   User.hasMany(Tweet);
   Tweet.belongsTo(User);
 
+  // returns array of tweet objects with only text, name, id keys
+  function parseTweets(tweets) {
+    return tweets.map(function(tweet){
+      return {
+        id: tweet.id,
+        name: tweet.User.name,
+        text: tweet.tweet
+      }
+    })
+  }
+
+  var find = function(query){
+    return User.findOne({
+      include: {all: true},
+      where: query
+    });
+  };
+
+  var list = function(){
+    return Tweet.findAll({include:[{all:true}]})
+    .then(function(tweets){
+      return parseTweets(tweets);
+    });
+  }
+
+  var add = function(name, text){
+    return find({name: name})
+      .then(function resolve(user){
+        if (!user)
+          return User.create({name: name})
+          .then(function resolve(user) {
+            Tweet.create({tweet: text, UserId: user.id});
+          })
+        return Tweet.create({tweet: text, UserId: user.id});
+      });
+  }
+
 module.exports = {
   User: User,
-  Tweet: Tweet
+  Tweet: Tweet,
+  list: list,
+  add: add,
+  find, find
 };
